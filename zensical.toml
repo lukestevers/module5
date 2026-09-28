@@ -9,23 +9,22 @@
 # WHY: Centralizes project documentation configuration.
 
 [project]
-site_name = "Docs" # CUSTOM: Set the name that appears in the browser tab.
-site_url = "https://denisecase.github.io/datafun-05-sql/"
-repo_url = "https://github.com/denisecase/datafun-05-sql"
+site_name = "Docs"
+site_url = "https://lukestevers.github.io/module5/"
+repo_url = "https://github.com/lukestevers/module5"
 repo_name = "datafun-05-sql"
-site_description = "Project Documentation" # CUSTOM: Set the description.
-docs_dir = "docs" # source directory for documentation markdown files
-site_dir = "site" # output directory for generated site (ignored by Git; not in repo)
-edit_uri = "edit/main/docs/" # "Edit this page" links (GitHub)
+site_description = "Project Documentation"
+docs_dir = "docs"
+site_dir = "site"
+edit_uri = "edit/main/docs/"
 extra_javascript = [
     "javascripts/read-aloud.js",
     "javascripts/concept-quiz.js",
 ]
 
 [project.extra]
-# WHY: Social links provide easy access to project repositories and profiles.
 social = [
-    {icon = "fontawesome/brands/github", link = "https://github.com/denisecase/datafun-05-sql" },
+    {icon = "fontawesome/brands/github", link = "https://github.com/lukestevers/module5" },
 ]
 
 [project.markdown_extensions]
