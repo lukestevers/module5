@@ -87,9 +87,8 @@ LOG: logging.Logger = get_logger("P05", level="DEBUG")
 
 DATA_DIR: Final[Path] = Path("data") / "retail"
 
-REGION_FILE: Final[Path] = DATA_DIR / "region.csv"
 STORE_FILE: Final[Path] = DATA_DIR / "store.csv"
-EMPLOYEE_FILE: Final[Path] = DATA_DIR / "employee.csv"
+SALE_FILE: Final[Path] = DATA_DIR / "sale.csv"
 
 # === LOCATE THE SQLITE DATABASE ===
 
@@ -102,65 +101,75 @@ CHART_PATH: Final[Path] = CHART_DIR / "first-chart.png"
 
 # === DETERMINE WHAT ONE ROW REPRESENTS ===
 
-REGION_GRAIN: Final[str] = "one business region"
 STORE_GRAIN: Final[str] = "one store"
-EMPLOYEE_GRAIN: Final[str] = "one employee"
+SALE_GRAIN: Final[str] = "one sale transaction"
 
 # === DESCRIBE THE TABLE RELATIONSHIPS ===
 
 RELATIONSHIP_DECISION: Final[str] = r"""
-The data is stored in three related tables.
+The data is stored in two related tables.
 
-One region can have many stores.
-The stores table uses region_id to identify each store's region.
+One store can have many sales.
 
-One store can have many employees.
-The employees table uses store_id to identify each employee's store.
+The sales table uses store_id to identify
+the store associated with each transaction.
 
-The shared keys connect information stored in different tables.
+The shared store_id key connects store information
+to sales information.
 """
 
 # === DEFINE THE ANALYTICAL QUESTION ===
 
 CUSTOM_QUERY_DECISION: Final[str] = r"""
-I want to compare the number of employees working at each store.
-The result should have one row per store.
+I want to compare purchasing patterns between
+cash and non-cash transactions.
 
-The information I need requires all three tables:
- - region name is in regions,
- - store name is in stores,
- - employee info is in employees.
+The result should show each product group
+and compare the number of transactions
+and items sold for each payment category.
+
+The information requires both tables:
+ - store information is in stores,
+ - sales and payment information is in sales.
+
+The tables are connected through store_id.
 """
 
 # === WRITE THE SQL QUERY ===
 
 CUSTOM_SQL_QUERY: Final[str] = """
 SELECT
-    r.region_name,
     s.store_name,
-    COUNT(e.employee_id) AS employee_count
-FROM regions AS r
-JOIN stores AS s
-    ON r.region_id = s.region_id
-LEFT JOIN employees AS e
-    ON s.store_id = e.store_id
+    sa.product_group,
+    CASE
+        WHEN sa.payment_type = 'Cash' THEN 'Cash'
+        ELSE 'Non-Cash'
+    END AS payment_category,
+    COUNT(sa.sale_id) AS transaction_count,
+    SUM(sa.items_sold) AS items_sold,
+    SUM(sa.sale_amount) AS total_sales
+FROM stores AS s
+JOIN sales AS sa
+    ON s.store_id = sa.store_id
 GROUP BY
-    r.region_name,
-    s.store_name
+    s.store_name,
+    sa.product_group,
+    payment_category
 ORDER BY
-    employee_count DESC;
+    s.store_name,
+    sa.product_group,
+    payment_category;
 """
 
 # === CHOOSE A VISUALIZATION ===
 
 CUSTOM_CHART_DECISION: Final[str] = r"""
-The query result has one numeric value
-(employee count) for each store.
+The query result compares purchases
+by product group and payment category.
 
-A bar chart works for comparing
-a numeric value across named categories.
-Every pandas df has a
-plot.box() method for creating box plots.
+A grouped bar chart can show differences
+between cash and non-cash purchases
+across product groups.
 """
 
 
@@ -185,13 +194,11 @@ def main() -> None:
     LOG.info("01. LOAD the related tables.")
     LOG.info("-------------------------------")
 
-    log_path(LOG, "regions file", path=REGION_FILE)
     log_path(LOG, "stores file", path=STORE_FILE)
-    log_path(LOG, "employees file", path=EMPLOYEE_FILE)
+    log_path(LOG, "sales file", path=SALE_FILE)
 
-    regions_df: pd.DataFrame = pd.read_csv(REGION_FILE)
     stores_df: pd.DataFrame = pd.read_csv(STORE_FILE)
-    employees_df: pd.DataFrame = pd.read_csv(EMPLOYEE_FILE)
+    sales_df: pd.DataFrame = pd.read_csv(SALE_FILE)
 
     LOG.info("Related tables loaded successfully.")
 
@@ -199,13 +206,11 @@ def main() -> None:
     LOG.info("02. INSPECT the grain and keys.")
     LOG.info("-------------------------------")
 
-    LOG.info(f"Regions grain: {REGION_GRAIN}")
     LOG.info(f"Stores grain: {STORE_GRAIN}")
-    LOG.info(f"Employees grain: {EMPLOYEE_GRAIN}")
+    LOG.info(f"Sales grain: {SALE_GRAIN}")
 
-    LOG.info(f"Regions columns: {regions_df.columns.tolist()}")
     LOG.info(f"Stores columns: {stores_df.columns.tolist()}")
-    LOG.info(f"Employees columns: {employees_df.columns.tolist()}")
+    LOG.info(f"Sales columns: {sales_df.columns.tolist()}")
 
     LOG.info(RELATIONSHIP_DECISION)
 
@@ -223,13 +228,6 @@ def main() -> None:
     LOG.info("04. LOAD the tables into SQLite.")
     LOG.info("-------------------------------")
 
-    regions_df.to_sql(
-        "regions",
-        connection,
-        if_exists="replace",
-        index=False,
-    )
-
     stores_df.to_sql(
         "stores",
         connection,
@@ -237,8 +235,8 @@ def main() -> None:
         index=False,
     )
 
-    employees_df.to_sql(
-        "employees",
+    sales_df.to_sql(
+        "sales",
         connection,
         if_exists="replace",
         index=False,
@@ -266,21 +264,22 @@ def main() -> None:
 
     LOG.info(CUSTOM_CHART_DECISION)
 
-    employee_ax = result_df.plot.bar(
-        x="store_name",
-        y="employee_count",
-        legend=False,
+    purchase_ax = (
+        result_df.groupby(["product_group", "payment_category"])["items_sold"]
+        .sum()
+        .unstack()
+        .plot.bar()
     )
 
-    # CUSTOM: The analyst can customize the returned Matplotlib Axes object.
-    employee_ax.set_title("Employees by Store")
-    employee_ax.set_xlabel("Store")
-    employee_ax.set_ylabel("Number of Employees")
+    purchase_ax.set_title("Items Sold by Product Group and Payment Type")
+    purchase_ax.set_xlabel("Product Group")
+    purchase_ax.set_ylabel("Items Sold")
+    purchase_ax.legend(title="Payment Category")
 
     CHART_DIR.mkdir(parents=True, exist_ok=True)
 
     save_chart(
-        employee_ax,
+        purchase_ax,
         CHART_PATH,
     )
 
@@ -295,16 +294,25 @@ def main() -> None:
     # Then record your CUSTOM observations
     # in a simple multi-line raw string.
 
-    LOG.info(r"""CUSTOM OBSERVATIONS:
-    The SQL query connected information from
-    the regions, stores, and employees tables.
+    LOG.info(
+        r"""CUSTOM OBSERVATIONS:
+The SQL query connected the stores and sales tables
+using the shared store_id key.
 
-    The result has one row per store.
+The result compares product groups by
+cash and non-cash payment categories.
 
-    I observed ...
+I observed that non-cash purchases were higher than cash purchases
+in every product group. Grocery had the most items sold overall,
+with 50 cash items and 103 non-cash items. Outdoor showed one
+of the largest differences, with 19 cash items compared with
+70 non-cash items.
 
-    Based on this result, I would next like to explore ...
-    """)
+Based on this result, I would next like to explore whether
+non-cash transactions also have higher average sale amounts
+than cash transactions.
+"""
+    )
 
     LOG.info("-------------------------------")
     LOG.info("08. DISPLAY the visualization.")

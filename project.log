@@ -127,3 +127,410 @@ plot.box() method for creating box plots.
 2026-08-25 08:31:36 | INFO | P05 | ===================================
 2026-08-25 08:31:36 | INFO | P05 | END main() - Executed successfully!
 2026-08-25 08:31:36 | INFO | P05 | ===================================
+2026-09-26 15:29:26 | INFO | P05 | === RUN START ===
+2026-09-26 15:29:26 | INFO | P05 | project=P05 - PYTHON AND SQL
+2026-09-26 15:29:26 | INFO | P05 | repo_dir=datafun-05-sql
+2026-09-26 15:29:26 | INFO | P05 | python=3.14.7
+2026-09-26 15:29:26 | INFO | P05 | os=Windows 11
+2026-09-26 15:29:26 | INFO | P05 | shell=powershell
+2026-09-26 15:29:26 | INFO | P05 | cwd=.
+2026-09-26 15:29:26 | INFO | P05 | github_actions=False
+2026-09-26 15:29:26 | INFO | P05 | ===================================
+2026-09-26 15:29:26 | INFO | P05 | START main()
+2026-09-26 15:29:26 | INFO | P05 | ===================================
+2026-09-26 15:29:26 | INFO | P05 | -------------------------------
+2026-09-26 15:29:26 | INFO | P05 | 01. LOAD the related tables.
+2026-09-26 15:29:26 | INFO | P05 | -------------------------------
+2026-09-26 15:29:26 | INFO | P05 | regions file = data\retail\region.csv
+2026-09-26 15:29:26 | INFO | P05 | stores file = data\retail\store.csv
+2026-09-26 15:29:26 | INFO | P05 | employees file = data\retail\employee.csv
+2026-09-26 15:29:26 | INFO | P05 | Related tables loaded successfully.
+2026-09-26 15:29:26 | INFO | P05 | -------------------------------
+2026-09-26 15:29:26 | INFO | P05 | 02. INSPECT the grain and keys.
+2026-09-26 15:29:26 | INFO | P05 | -------------------------------
+2026-09-26 15:29:26 | INFO | P05 | Regions grain: one business region
+2026-09-26 15:29:26 | INFO | P05 | Stores grain: one store
+2026-09-26 15:29:26 | INFO | P05 | Employees grain: one employee
+2026-09-26 15:29:26 | INFO | P05 | Regions columns: ['region_id', 'region_name']
+2026-09-26 15:29:26 | INFO | P05 | Stores columns: ['store_id', 'store_name', 'region_id', 'store_type', 'square_feet']
+2026-09-26 15:29:26 | INFO | P05 | Employees columns: ['employee_id', 'employee_name', 'store_id', 'role', 'years_employed']
+2026-09-26 15:29:26 | INFO | P05 | 
+The data is stored in three related tables.
+
+One region can have many stores.
+The stores table uses region_id to identify each store's region.
+
+One store can have many employees.
+The employees table uses store_id to identify each employee's store.
+
+The shared keys connect information stored in different tables.
+
+2026-09-26 15:29:26 | INFO | P05 | -------------------------------
+2026-09-26 15:29:26 | INFO | P05 | 03. CREATE a SQLite database.
+2026-09-26 15:29:26 | INFO | P05 | -------------------------------
+2026-09-26 15:29:26 | INFO | P05 | SQLite database = data\retail\business.sqlite
+2026-09-26 15:29:26 | INFO | P05 | SQLite database connection created.
+2026-09-26 15:29:26 | INFO | P05 | -------------------------------
+2026-09-26 15:29:26 | INFO | P05 | 04. LOAD the tables into SQLite.
+2026-09-26 15:29:26 | INFO | P05 | -------------------------------
+2026-09-26 15:29:26 | INFO | P05 | Related tables loaded into SQLite.
+2026-09-26 15:29:26 | INFO | P05 | -------------------------------
+2026-09-26 15:29:26 | INFO | P05 | 05. QUERY across related tables with SQL.
+2026-09-26 15:29:26 | INFO | P05 | -------------------------------
+2026-09-26 15:29:26 | INFO | P05 | 
+I want to compare the number of employees working at each store.
+The result should have one row per store.
+
+The information I need requires all three tables:
+ - region name is in regions,
+ - store name is in stores,
+ - employee info is in employees.
+
+2026-09-26 15:29:26 | INFO | P05 | 
+SQL query:
+
+SELECT
+    r.region_name,
+    s.store_name,
+    COUNT(e.employee_id) AS employee_count
+FROM regions AS r
+JOIN stores AS s
+    ON r.region_id = s.region_id
+LEFT JOIN employees AS e
+    ON s.store_id = e.store_id
+GROUP BY
+    r.region_name,
+    s.store_name
+ORDER BY
+    employee_count DESC;
+
+2026-09-26 15:29:26 | INFO | P05 | 
+Query result:
+   region_name        store_name  employee_count
+0         West     Coastal Plaza              18
+1        South  Peachtree Center              17
+2         East      Maple Square              15
+3        South   Sunrise Commons              14
+4      Central    Prairie Center              13
+5         West     Canyon Center              13
+6        North         Northgate              12
+7         East      Harbor Point              11
+8      Central  Lakeside Commons              10
+9        South   Magnolia Market              10
+10       North       Cedar Plaza               9
+11     Central      River Market               8
+12        West    Desert Springs               7
+13        East     Pine Crossing               6
+14       South    Bayou Crossing               5
+2026-09-26 15:29:26 | INFO | P05 | -------------------------------
+2026-09-26 15:29:26 | INFO | P05 | 06. VISUALIZE the query result with Python.
+2026-09-26 15:29:26 | INFO | P05 | -------------------------------
+2026-09-26 15:29:26 | INFO | P05 | 
+The query result has one numeric value
+(employee count) for each store.
+
+A bar chart works for comparing
+a numeric value across named categories.
+Every pandas df has a
+plot.box() method for creating box plots.
+
+2026-09-26 15:29:27 | INFO | P05 | Chart saved successfully at docs\images\first-chart.png.
+2026-09-26 15:29:27 | INFO | P05 | -------------------------------
+2026-09-26 15:29:27 | INFO | P05 | 07. SUMMARIZE what you found.
+2026-09-26 15:29:27 | INFO | P05 | -------------------------------
+2026-09-26 15:29:27 | INFO | P05 | CUSTOM OBSERVATIONS:
+    The SQL query connected information from
+    the regions, stores, and employees tables.
+
+    The result has one row per store.
+
+    I observed ...
+
+    Based on this result, I would next like to explore ...
+    
+2026-09-26 15:29:27 | INFO | P05 | -------------------------------
+2026-09-26 15:29:27 | INFO | P05 | 08. DISPLAY the visualization.
+2026-09-26 15:29:27 | INFO | P05 | -------------------------------
+2026-09-26 15:29:27 | INFO | P05 | In a script, call plt.show() at the end to display all charts.
+2026-09-26 15:29:27 | INFO | P05 | Close all chart windows (with the close button) to continue.
+2026-09-26 16:31:45 | INFO | P05 | ===================================
+2026-09-26 16:31:45 | INFO | P05 | END main() - Executed successfully!
+2026-09-26 16:31:45 | INFO | P05 | ===================================
+2026-09-27 18:56:47 | INFO | P05 | === RUN START ===
+2026-09-27 18:56:47 | INFO | P05 | project=P05 - PYTHON AND SQL
+2026-09-27 18:56:47 | INFO | P05 | repo_dir=datafun-05-sql
+2026-09-27 18:56:47 | INFO | P05 | python=3.14.7
+2026-09-27 18:56:47 | INFO | P05 | os=Windows 11
+2026-09-27 18:56:47 | INFO | P05 | shell=powershell
+2026-09-27 18:56:47 | INFO | P05 | cwd=.
+2026-09-27 18:56:47 | INFO | P05 | github_actions=False
+2026-09-27 18:56:47 | INFO | P05 | ===================================
+2026-09-27 18:56:47 | INFO | P05 | START main()
+2026-09-27 18:56:47 | INFO | P05 | ===================================
+2026-09-27 18:56:47 | INFO | P05 | -------------------------------
+2026-09-27 18:56:47 | INFO | P05 | 01. LOAD the related tables.
+2026-09-27 18:56:47 | INFO | P05 | -------------------------------
+2026-09-27 18:56:47 | INFO | P05 | stores file = data\retail\store.csv
+2026-09-27 18:56:47 | INFO | P05 | sales file = data\retail\sale.csv
+2026-09-27 18:56:47 | INFO | P05 | Related tables loaded successfully.
+2026-09-27 18:56:47 | INFO | P05 | -------------------------------
+2026-09-27 18:56:47 | INFO | P05 | 02. INSPECT the grain and keys.
+2026-09-27 18:56:47 | INFO | P05 | -------------------------------
+2026-09-27 18:56:47 | INFO | P05 | Stores grain: one store
+2026-09-27 18:56:47 | INFO | P05 | Sales grain: one sale transaction
+2026-09-27 18:56:47 | INFO | P05 | Stores columns: ['store_id', 'store_name', 'region_id', 'store_type', 'square_feet']
+2026-09-27 18:56:47 | INFO | P05 | Sales columns: ['sale_id', 'store_id', 'product_group', 'items_sold', 'sale_amount', 'payment_type']
+2026-09-27 18:56:47 | INFO | P05 | 
+The data is stored in two related tables.
+
+One store can have many sales.
+
+The sales table uses store_id to identify
+the store associated with each transaction.
+
+The shared store_id key connects store information
+to sales information.
+
+2026-09-27 18:56:47 | INFO | P05 | -------------------------------
+2026-09-27 18:56:47 | INFO | P05 | 03. CREATE a SQLite database.
+2026-09-27 18:56:47 | INFO | P05 | -------------------------------
+2026-09-27 18:56:47 | INFO | P05 | SQLite database = data\retail\business.sqlite
+2026-09-27 18:56:47 | INFO | P05 | SQLite database connection created.
+2026-09-27 18:56:47 | INFO | P05 | -------------------------------
+2026-09-27 18:56:47 | INFO | P05 | 04. LOAD the tables into SQLite.
+2026-09-27 18:56:47 | INFO | P05 | -------------------------------
+2026-09-27 18:56:47 | INFO | P05 | Related tables loaded into SQLite.
+2026-09-27 18:56:47 | INFO | P05 | -------------------------------
+2026-09-27 18:56:47 | INFO | P05 | 05. QUERY across related tables with SQL.
+2026-09-27 18:56:47 | INFO | P05 | -------------------------------
+2026-09-27 18:56:47 | INFO | P05 | 
+I want to compare purchasing patterns between
+cash and non-cash transactions.
+
+The result should show each product group
+and compare the number of transactions
+and items sold for each payment category.
+
+The information requires both tables:
+ - store information is in stores,
+ - sales and payment information is in sales.
+
+The tables are connected through store_id.
+
+2026-09-27 18:56:47 | INFO | P05 | 
+SQL query:
+
+SELECT
+    s.store_name,
+    sa.product_group,
+    CASE
+        WHEN sa.payment_type = 'Cash' THEN 'Cash'
+        ELSE 'Non-Cash'
+    END AS payment_category,
+    COUNT(sa.sale_id) AS transaction_count,
+    SUM(sa.items_sold) AS items_sold,
+    SUM(sa.sale_amount) AS total_sales
+FROM stores AS s
+JOIN sales AS sa
+    ON s.store_id = sa.store_id
+GROUP BY
+    s.store_name,
+    sa.product_group,
+    payment_category
+ORDER BY
+    s.store_name,
+    sa.product_group,
+    payment_category;
+
+2026-09-27 18:56:47 | INFO | P05 | 
+Query result:
+         store_name product_group payment_category  transaction_count  items_sold  total_sales
+0    Bayou Crossing       Apparel         Non-Cash                  1           4       324.60
+1    Bayou Crossing       Grocery             Cash                  1           1        45.86
+2    Bayou Crossing       Grocery         Non-Cash                  3           7       148.99
+3    Bayou Crossing       Outdoor             Cash                  1           3        61.17
+4    Bayou Crossing       Outdoor         Non-Cash                  1           5       206.34
+..              ...           ...              ...                ...         ...          ...
+90     River Market       Outdoor         Non-Cash                  2           7       448.09
+91  Sunrise Commons       Apparel         Non-Cash                  2           5       266.06
+92  Sunrise Commons   Electronics             Cash                  2           8       424.55
+93  Sunrise Commons       Grocery             Cash                  1           6       179.25
+94  Sunrise Commons          Home         Non-Cash                  2           5       107.86
+
+[95 rows x 6 columns]
+2026-09-27 18:56:47 | INFO | P05 | -------------------------------
+2026-09-27 18:56:47 | INFO | P05 | 06. VISUALIZE the query result with Python.
+2026-09-27 18:56:47 | INFO | P05 | -------------------------------
+2026-09-27 18:56:47 | INFO | P05 | 
+The query result compares purchases
+by product group and payment category.
+
+A grouped bar chart can show differences
+between cash and non-cash purchases
+across product groups.
+
+2026-09-27 18:56:49 | INFO | P05 | Chart saved successfully at docs\images\first-chart.png.
+2026-09-27 18:56:49 | INFO | P05 | -------------------------------
+2026-09-27 18:56:49 | INFO | P05 | 07. SUMMARIZE what you found.
+2026-09-27 18:56:49 | INFO | P05 | -------------------------------
+2026-09-27 18:56:49 | INFO | P05 | CUSTOM OBSERVATIONS:
+The SQL query connected the stores and sales tables
+using the shared store_id key.
+
+The result compares product groups by
+cash and non-cash payment categories.
+
+I observed ...
+
+Based on this result, I would next like to explore ...
+
+2026-09-27 18:56:49 | INFO | P05 | -------------------------------
+2026-09-27 18:56:49 | INFO | P05 | 08. DISPLAY the visualization.
+2026-09-27 18:56:49 | INFO | P05 | -------------------------------
+2026-09-27 18:56:49 | INFO | P05 | In a script, call plt.show() at the end to display all charts.
+2026-09-27 18:56:49 | INFO | P05 | Close all chart windows (with the close button) to continue.
+2026-09-27 19:01:04 | INFO | P05 | ===================================
+2026-09-27 19:01:04 | INFO | P05 | END main() - Executed successfully!
+2026-09-27 19:01:04 | INFO | P05 | ===================================
+2026-09-27 19:01:46 | INFO | P05 | === RUN START ===
+2026-09-27 19:01:46 | INFO | P05 | project=P05 - PYTHON AND SQL
+2026-09-27 19:01:46 | INFO | P05 | repo_dir=datafun-05-sql
+2026-09-27 19:01:46 | INFO | P05 | python=3.14.7
+2026-09-27 19:01:46 | INFO | P05 | os=Windows 11
+2026-09-27 19:01:46 | INFO | P05 | shell=powershell
+2026-09-27 19:01:46 | INFO | P05 | cwd=.
+2026-09-27 19:01:46 | INFO | P05 | github_actions=False
+2026-09-27 19:01:46 | INFO | P05 | ===================================
+2026-09-27 19:01:46 | INFO | P05 | START main()
+2026-09-27 19:01:46 | INFO | P05 | ===================================
+2026-09-27 19:01:46 | INFO | P05 | -------------------------------
+2026-09-27 19:01:46 | INFO | P05 | 01. LOAD the related tables.
+2026-09-27 19:01:46 | INFO | P05 | -------------------------------
+2026-09-27 19:01:46 | INFO | P05 | stores file = data\retail\store.csv
+2026-09-27 19:01:46 | INFO | P05 | sales file = data\retail\sale.csv
+2026-09-27 19:01:46 | INFO | P05 | Related tables loaded successfully.
+2026-09-27 19:01:46 | INFO | P05 | -------------------------------
+2026-09-27 19:01:46 | INFO | P05 | 02. INSPECT the grain and keys.
+2026-09-27 19:01:46 | INFO | P05 | -------------------------------
+2026-09-27 19:01:46 | INFO | P05 | Stores grain: one store
+2026-09-27 19:01:46 | INFO | P05 | Sales grain: one sale transaction
+2026-09-27 19:01:46 | INFO | P05 | Stores columns: ['store_id', 'store_name', 'region_id', 'store_type', 'square_feet']
+2026-09-27 19:01:46 | INFO | P05 | Sales columns: ['sale_id', 'store_id', 'product_group', 'items_sold', 'sale_amount', 'payment_type']
+2026-09-27 19:01:46 | INFO | P05 | 
+The data is stored in two related tables.
+
+One store can have many sales.
+
+The sales table uses store_id to identify
+the store associated with each transaction.
+
+The shared store_id key connects store information
+to sales information.
+
+2026-09-27 19:01:46 | INFO | P05 | -------------------------------
+2026-09-27 19:01:46 | INFO | P05 | 03. CREATE a SQLite database.
+2026-09-27 19:01:46 | INFO | P05 | -------------------------------
+2026-09-27 19:01:46 | INFO | P05 | SQLite database = data\retail\business.sqlite
+2026-09-27 19:01:46 | INFO | P05 | SQLite database connection created.
+2026-09-27 19:01:46 | INFO | P05 | -------------------------------
+2026-09-27 19:01:46 | INFO | P05 | 04. LOAD the tables into SQLite.
+2026-09-27 19:01:46 | INFO | P05 | -------------------------------
+2026-09-27 19:01:46 | INFO | P05 | Related tables loaded into SQLite.
+2026-09-27 19:01:46 | INFO | P05 | -------------------------------
+2026-09-27 19:01:46 | INFO | P05 | 05. QUERY across related tables with SQL.
+2026-09-27 19:01:46 | INFO | P05 | -------------------------------
+2026-09-27 19:01:46 | INFO | P05 | 
+I want to compare purchasing patterns between
+cash and non-cash transactions.
+
+The result should show each product group
+and compare the number of transactions
+and items sold for each payment category.
+
+The information requires both tables:
+ - store information is in stores,
+ - sales and payment information is in sales.
+
+The tables are connected through store_id.
+
+2026-09-27 19:01:46 | INFO | P05 | 
+SQL query:
+
+SELECT
+    s.store_name,
+    sa.product_group,
+    CASE
+        WHEN sa.payment_type = 'Cash' THEN 'Cash'
+        ELSE 'Non-Cash'
+    END AS payment_category,
+    COUNT(sa.sale_id) AS transaction_count,
+    SUM(sa.items_sold) AS items_sold,
+    SUM(sa.sale_amount) AS total_sales
+FROM stores AS s
+JOIN sales AS sa
+    ON s.store_id = sa.store_id
+GROUP BY
+    s.store_name,
+    sa.product_group,
+    payment_category
+ORDER BY
+    s.store_name,
+    sa.product_group,
+    payment_category;
+
+2026-09-27 19:01:46 | INFO | P05 | 
+Query result:
+         store_name product_group payment_category  transaction_count  items_sold  total_sales
+0    Bayou Crossing       Apparel         Non-Cash                  1           4       324.60
+1    Bayou Crossing       Grocery             Cash                  1           1        45.86
+2    Bayou Crossing       Grocery         Non-Cash                  3           7       148.99
+3    Bayou Crossing       Outdoor             Cash                  1           3        61.17
+4    Bayou Crossing       Outdoor         Non-Cash                  1           5       206.34
+..              ...           ...              ...                ...         ...          ...
+90     River Market       Outdoor         Non-Cash                  2           7       448.09
+91  Sunrise Commons       Apparel         Non-Cash                  2           5       266.06
+92  Sunrise Commons   Electronics             Cash                  2           8       424.55
+93  Sunrise Commons       Grocery             Cash                  1           6       179.25
+94  Sunrise Commons          Home         Non-Cash                  2           5       107.86
+
+[95 rows x 6 columns]
+2026-09-27 19:01:46 | INFO | P05 | -------------------------------
+2026-09-27 19:01:46 | INFO | P05 | 06. VISUALIZE the query result with Python.
+2026-09-27 19:01:46 | INFO | P05 | -------------------------------
+2026-09-27 19:01:46 | INFO | P05 | 
+The query result compares purchases
+by product group and payment category.
+
+A grouped bar chart can show differences
+between cash and non-cash purchases
+across product groups.
+
+2026-09-27 19:01:46 | INFO | P05 | Chart saved successfully at docs\images\first-chart.png.
+2026-09-27 19:01:46 | INFO | P05 | -------------------------------
+2026-09-27 19:01:46 | INFO | P05 | 07. SUMMARIZE what you found.
+2026-09-27 19:01:46 | INFO | P05 | -------------------------------
+2026-09-27 19:01:46 | INFO | P05 | CUSTOM OBSERVATIONS:
+The SQL query connected the stores and sales tables
+using the shared store_id key.
+
+The result compares product groups by
+cash and non-cash payment categories.
+
+I observed that non-cash purchases were higher than cash purchases
+in every product group. Grocery had the most items sold overall,
+with 50 cash items and 103 non-cash items. Outdoor showed one
+of the largest differences, with 19 cash items compared with
+70 non-cash items.
+
+Based on this result, I would next like to explore whether
+non-cash transactions also have higher average sale amounts
+than cash transactions.
+
+2026-09-27 19:01:46 | INFO | P05 | -------------------------------
+2026-09-27 19:01:46 | INFO | P05 | 08. DISPLAY the visualization.
+2026-09-27 19:01:46 | INFO | P05 | -------------------------------
+2026-09-27 19:01:46 | INFO | P05 | In a script, call plt.show() at the end to display all charts.
+2026-09-27 19:01:46 | INFO | P05 | Close all chart windows (with the close button) to continue.
+2026-09-27 19:02:49 | INFO | P05 | ===================================
+2026-09-27 19:02:49 | INFO | P05 | END main() - Executed successfully!
+2026-09-27 19:02:49 | INFO | P05 | ===================================
